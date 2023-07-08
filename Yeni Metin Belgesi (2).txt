@@ -1,0 +1,151 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Kullanıcı veri yapısı
+typedef struct {
+    char isim[50];
+    int hesapNumarasi;
+    float bakiye;
+} Kullanici;
+
+// Kullanıcıları tutacak dizin
+Kullanici kullaniciListesi[100];
+int kullaniciSayisi = 0;
+
+// Dosyadan kullanıcıları yükleme
+void dosyadanKullanicilariYukle() {
+    FILE *dosya = fopen("kullanicilar.txt", "r");
+    if (dosya == NULL) {
+        printf("Dosya acilamadi.");
+        return;
+    }
+    
+    while (!feof(dosya)) {
+        fscanf(dosya, "%s %d %f\n", kullaniciListesi[kullaniciSayisi].isim, &kullaniciListesi[kullaniciSayisi].hesapNumarasi, &kullaniciListesi[kullaniciSayisi].bakiye);
+        kullaniciSayisi++;
+    }
+    
+    fclose(dosya);
+}
+
+// Kullanıcıları dosyaya kaydetme
+void kullanicilariDosyayaKaydet() {
+    FILE *dosya = fopen("kullanicilar.txt", "w");
+    if (dosya == NULL) {
+        printf("Dosya olusturulamadi.");
+        return;
+    }
+    
+    for (int i = 0; i < kullaniciSayisi; i++) {
+        fprintf(dosya, "%s %d %.2f\n", kullaniciListesi[i].isim, kullaniciListesi[i].hesapNumarasi, kullaniciListesi[i].bakiye);
+    }
+    
+    fclose(dosya);
+}
+
+// Kullanıcı kayıt işlemi
+void kullaniciKayit() {
+    Kullanici yeniKullanici;
+    
+    printf("Isim: ");
+    scanf("%s", yeniKullanici.isim);
+    
+    printf("Hesap Numarasi: ");
+    scanf("%d", &yeniKullanici.hesapNumarasi);
+    
+    printf("Baslangic Bakiyesi: ");
+    scanf("%f", &yeniKullanici.bakiye);
+    
+    kullaniciListesi[kullaniciSayisi] = yeniKullanici;
+    kullaniciSayisi++;
+    
+    printf("Kayit basarili.\n");
+}
+
+// Hesap bakiyesini görüntüleme
+void bakiyeGoruntule(int hesapNumarasi) {
+    for (int i = 0; i < kullaniciSayisi; i++) {
+        if (kullaniciListesi[i].hesapNumarasi == hesapNumarasi) {
+            printf("Hesap Numarasi: %d\n", kullaniciListesi[i].hesapNumarasi);
+            printf("Isim: %s\n", kullaniciListesi[i].isim);
+            printf("Bakiye: %.2f\n", kullaniciListesi[i].bakiye);
+            return;
+        }
+    }
+    
+    printf("Hesap bulunamadi.\n");
+}
+
+// Hesap bakiyesini güncelleme
+void bakiyeGuncelle(int hesapNumarasi, float miktar) {
+    for (int i = 0; i < kullaniciSayisi; i++) {
+        if (kullaniciListesi[i].hesapNumarasi == hesapNumarasi) {
+            kullaniciListesi[i].bakiye += miktar;
+            printf("Bakiye guncellendi.\n");
+            return;
+        }
+    }
+    
+    printf("Hesap bulunamadi.\n");
+}
+
+// Ana menüyü görüntüleme
+void anaMenu() {
+    int secim;
+    int hesapNumarasi;
+    float miktar;
+    
+    while (true) {
+        printf("\n1- Kullanici Kayit\n");
+        printf("2- Bakiye Goruntule\n");
+        printf("3- Bakiye Yatirma\n");
+        printf("4- Bakiye Cekme\n");
+        printf("5- Cikis\n");
+        printf("Seciminizi yapin: ");
+        scanf("%d", &secim);
+        
+        switch (secim) {
+            case 1:
+                kullaniciKayit();
+                break;
+                
+            case 2:
+                printf("Hesap Numarasi: ");
+                scanf("%d", &hesapNumarasi);
+                bakiyeGoruntule(hesapNumarasi);
+                break;
+                
+            case 3:
+                printf("Hesap Numarasi: ");
+                scanf("%d", &hesapNumarasi);
+                printf("Yatirilacak Miktar: ");
+                scanf("%f", &miktar);
+                bakiyeGuncelle(hesapNumarasi, miktar);
+                break;
+                
+            case 4:
+                printf("Hesap Numarasi: ");
+                scanf("%d", &hesapNumarasi);
+                printf("Cekilecek Miktar: ");
+                scanf("%f", &miktar);
+                bakiyeGuncelle(hesapNumarasi, -miktar);
+                break;
+                
+            case 5:
+                kullanicilariDosyayaKaydet();
+                printf("Cikis yapildi.\n");
+                return;
+                
+            default:
+                printf("Gecersiz secim. Tekrar deneyin.\n");
+                break;
+        }
+    }
+}
+
+int main() {
+    dosyadanKullanicilariYukle();
+    anaMenu();
+    return 0;
+}
